@@ -5,7 +5,9 @@ pytorchを使用
 
 
 ## GBDT_Classification_optuna_Kfold
-上記にk-分割交差検証を導入したもの
+上記のコードに対して、
+oputnaを用いたハイパーパラメータチューニングを行うコード
+k-分割交差検証を導入
 
 
 
