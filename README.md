@@ -1,7 +1,7 @@
 # 内容
-## GBDT_Classification_pytorch
-ニューラルネットワークを用いた他クラス分類
-pytorchを使用
+## GBDT_Classification
+勾配ブースティング決定木を用いた多クラス分類
+LightGBMを使用
 
 
 ## GBDT_Classification_optuna_Kfold
