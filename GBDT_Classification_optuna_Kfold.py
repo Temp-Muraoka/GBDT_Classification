@@ -25,7 +25,7 @@ import os
 # ============================================================
 # Setting
 # ============================================================
-TRIAL_N = 20 #探索回数
+TRIAL_N = 360 #探索回数
 N_SPLITS = 5    # 交差検証の分割数
 
 # HIDDEN_LAYERS = [32, 16]
@@ -37,7 +37,7 @@ N_SPLITS = 5    # 交差検証の分割数
 # DROPOUT_RATE = 0.0
 
 # Early Stopping
-PATIENCE = 15       # 検証Lossが改善しないことを許容するエポック数
+PATIENCE = 5       # 検証Lossが改善しないことを許容するエポック数
 
 
 
@@ -119,23 +119,23 @@ def objective(trial):
     # 探索したいハイパーパラメータの設定 (LightGBM用)
     # --------------------------------------
     params = {
-        'objective': 'multiclass',
-        'num_class': OUTPUT_DIM,
-        'metric': 'multi_logloss',
-        'boosting_type': 'gbdt',
-        'random_state': 42,
-        'verbose': -1,
-        
-        # チューニング対象パラメータ
-        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.2, log=True),
-        'num_leaves': trial.suggest_int('num_leaves', 15, 127),
-        'max_depth': trial.suggest_int('max_depth', 3, 10),
-        'min_child_samples': trial.suggest_int('min_child_samples', 10, 100),
-        'subsample': trial.suggest_float('subsample', 0.6, 1.0),
-        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
-        'reg_alpha': trial.suggest_float('reg_alpha', 1e-3, 10.0, log=True),
-        'reg_lambda': trial.suggest_float('reg_lambda', 1e-3, 10.0, log=True),
-    }
+                'objective': 'multiclass',
+                'num_class': OUTPUT_DIM,
+                'metric': 'multi_logloss',
+                'boosting_type': 'gbdt',
+                'random_state': 42,
+                'verbose': -1,
+                
+                # チューニング対象パラメータ（対数変数は霧の良い数値のみ）
+                'learning_rate': trial.suggest_categorical('learning_rate', [0.001, 0.005, 0.01, 0.05, 0.1]),
+                'num_leaves': trial.suggest_int('num_leaves', 15, 127),
+                'max_depth': trial.suggest_int('max_depth', 3, 10),
+                'min_child_samples': trial.suggest_int('min_child_samples', 10, 100),
+                'subsample': trial.suggest_float('subsample', 0.6, 1.0, step=0.01),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0, step=0.01),
+                'reg_alpha': trial.suggest_categorical('reg_alpha', [0.0, 0.01, 0.1, 1.0, 10.0]),
+                'reg_lambda': trial.suggest_categorical('reg_lambda',[0.0, 0.01, 0.1, 1.0, 10.0]),
+               }
 
     # 各フォールドのスコアを格納するリスト
     fold_valid_losses = []
@@ -244,12 +244,6 @@ study.optimize(objective, n_trials=TRIAL_N)
 df_trials = study.trials_dataframe()
 df_trials.to_csv(csv_path, index=False, encoding="utf-8-sig")
 
-print("\nハイパーパラメータチューニング完了！")
-print(f"ベスト評価値: {study.best_value:.4f}")
-print("ベストパラメータ:")
-for key, val in study.best_params.items():
-    print(f"  - {key}: {val}")
-print(f"履歴保存先: {csv_path}")
 
 # --- 最も良かったTrialから情報を取得 ---
 best_trial = study.best_trial
