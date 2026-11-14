@@ -10,7 +10,7 @@ import joblib
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 
 import lightgbm as lgb
@@ -94,9 +94,17 @@ X_train, X_test, Y_train, Y_test = train_test_split(
 
 model = lgb.LGBMClassifier(
     random_state=RANDOM_STATE,
-    n_estimators=ESTIMATORS,
-    learning_rate=LEARNING_RATE
+    n_estimators=ESTIMATORS, # 木の本数（Early Stoppingと併用するため多めに設定）
+    learning_rate=LEARNING_RATE,  # 学習率       
+    num_leaves=31,               # 葉の最大数
+    max_depth=-1,                # 木の深さ(-1制限なし)
+    min_child_samples=20,        # 葉の最小データ数
+    subsample=0.8,               # データ（行）のサンプリング率
+    colsample_bytree=0.8,        # 特徴量（列）のサンプリング率
+    reg_alpha=0.1,               # L1正則化（0~10 対数）
+    reg_lambda=0.1,              # L2正則化（0~10 対数）
 )
+
 
 print("\nModel Structure:")
 print(model)
